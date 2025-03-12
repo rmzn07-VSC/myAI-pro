@@ -1,39 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>myAI ile Sohbet Et! - ÖZGÜR</title>
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #chat-container {
+            flex: 1;
+            min-height: 0;
+            margin-bottom: 20px;
+        }
+        
+        .input-form {
+            margin-top: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                max-width: none;
+                padding: 15px;
+            }
+            
+            #chat-container {
+                height: calc(100vh - 200px);
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>myAI ile Sohbet Et!</h1>
-
-        <div id="chat-container">
-            {% for mesaj in sohbet_gecmisi %}  <!-- SOHBET GEÇMİŞİNİ DÖNGÜYLE GÖSTERME KISMI BAŞLANGICI -->
-                <div class="message {{ mesaj.rol }}-message" {% if mesaj.get('yeni_yanit') %}data-new-response="true"{% endif %}> <!-- MESAJ KUTUSU (KULLANICI VEYA YAPAY ZEKA MESAJI) -->
-                    <div class="message-content">
-                        {% if mesaj.rol == 'ai' %} <!-- Hatalı satır düzeltildi -->
-                            <h2>myAI Cevabı:</h2>
-                        {% else %}
-                            <h2>Sen:</h2>
-                        {% endif %}
-                        <p>{{ mesaj.icerik | safe }}</p>
+    <div class="app-container">
+        <!-- Sol taraf - Sohbet Geçmişi -->
+        <div class="sidebar">
+            <button class="new-chat-btn btn btn-light w-100 mb-3">
+                <i class="bi bi-plus-lg me-2"></i>Yeni Sohbet
+            </button>
+            <div class="chat-history">
+                {% for chat_id, chat in chat_histories.items() %}
+                    <div class="history-item" data-chat-id="{{ chat_id }}">
+                        <i class="bi bi-chat-left-text"></i>
+                        <span>{{ chat.title }}</span>
                     </div>
-                </div>
-            {% endfor %} <!-- SOHBET GEÇMİŞİNİ DÖNGÜYLE GÖSTERME KISMI BİTİŞİ -->
+                {% endfor %}
+            </div>
         </div>
 
-        <form method="POST" class="input-form" id="chat-form">
-            <label for="mesaj">Mesajınız:</label>
-            <textarea id="mesaj" name="mesaj" rows="4"></textarea>
-            <div class="button-group">
-                <button type="submit" name="action" value="send">Gönder</button>
-                <button type="submit" name="action" value="clear" class="clear-button" style="background-color: #ff0000;">Temizle</button>
+        <!-- Sağ taraf - Ana sohbet alanı -->
+        <div class="main-content">
+            <h1 class="text-center mb-4 display-4 fw-bold text-light" style="margin-top:-15px; padding-bottom: 30px; font-size: 30px;">myAI ile Sohbet Et!</h1>
+
+            <div id="chat-container" class="bg-dark rounded">
+                {% for mesaj in sohbet_gecmisi %}
+                    <div class="message {{ mesaj.rol }}-message" {% if mesaj.get('yeni_yanit') %}data-new-response="true"{% endif %}>
+                        <div class="message-content">
+                            {% if mesaj.rol == 'ai' %}
+                                <h2>myAI Cevabı:</h2>
+                            {% else %}
+                                <h2>Sen:</h2>
+                            {% endif %}
+                            <p>{{ mesaj.icerik | safe }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-        </form>
+            
+            <!-- Input form artık main-content içinde -->
+            <form method="POST" class="input-form" id="chat-form">
+                <div class="input-group">
+                    <textarea class="form-control" id="mesaj" name="mesaj" placeholder="Mesajınızı yazın..." autofocus></textarea>
+                    <button type="submit" name="action" value="send" class="btn btn-success" title="Gönder">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                    <button type="submit" name="action" value="clear" class="btn btn-outline-danger" title="Sohbeti Temizle">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Enter tuşu için olan kodu güncelle
         document.getElementById('mesaj').addEventListener('keypress', function(e) {
@@ -221,10 +292,6 @@
             setTimeout(checkDuplicateQuests, 1000);
         });
 
-       
-
-     
-
         // Her 2 saniyede bir son mesajı kontrol et
         setInterval(checkLastMessage, 10);
 
@@ -235,8 +302,6 @@
                 setTimeout(checkLastMessage, 10);
             }
         });
-
-        
 
         // Yeni AI yanıtlarını izle
         const observer = new MutationObserver((mutations) => {
@@ -257,6 +322,49 @@
         observer.observe(document.getElementById('chat-container'), {
             childList: true,
             subtree: true
+        });
+
+        // Mevcut scriptlerin sonuna ekleyin
+
+        // Yeni sohbet butonu işleyicisi
+        document.querySelector('.new-chat-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/new_chat', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+            }
+        });
+
+        // Geçmiş sohbet öğesi tıklama işleyicisi
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.addEventListener('click', async () => {
+                const chatId = item.dataset.chatId;
+                try {
+                    const response = await fetch(`/load_chat/${chatId}`);
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Hata:', error);
+                }
+            });
+        });
+
+        // Mobil menü toggle
+        const menuToggle = document.createElement('button');
+        menuToggle.className = 'menu-toggle';
+        menuToggle.innerHTML = '<i class="bi bi-list"></i>';
+        document.body.appendChild(menuToggle);
+
+        menuToggle.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
         });
     </script>
 </body>
