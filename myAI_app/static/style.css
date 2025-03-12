@@ -411,6 +411,7 @@ h1 {
 .new-chat-btn:hover {
     background-color: #505050;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Geçmiş sohbetler listesi */
@@ -430,8 +431,13 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-.history-item:hover {
+.history-item.active {
     background-color: #404040;
+    border-left: 3px solid #4a90e2;
+}
+
+.history-item:hover {
+    background-color: #353535;
 }
 
 .history-item i {
