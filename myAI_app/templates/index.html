@@ -13,7 +13,7 @@
             {% for mesaj in sohbet_gecmisi %}  <!-- SOHBET GEÇMİŞİNİ DÖNGÜYLE GÖSTERME KISMI BAŞLANGICI -->
                 <div class="message {{ mesaj.rol }}-message" {% if mesaj.get('yeni_yanit') %}data-new-response="true"{% endif %}> <!-- MESAJ KUTUSU (KULLANICI VEYA YAPAY ZEKA MESAJI) -->
                     <div class="message-content">
-                        {% if mesaj.rol</div> == 'ai' %}
+                        {% if mesaj.rol == 'ai' %} <!-- Hatalı satır düzeltildi -->
                             <h2>myAI Cevabı:</h2>
                         {% else %}
                             <h2>Sen:</h2>
