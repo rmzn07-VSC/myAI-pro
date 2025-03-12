@@ -29,4 +29,5 @@ Projeni güncellemek için ise:
 
 1.   git add .
 2.   git commit -m "neEklendiyseOnuYaz"
-3.   git push origin main
+3.   git branch -M main
+4.   git push origin main
