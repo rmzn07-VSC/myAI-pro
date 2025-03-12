@@ -19,71 +19,96 @@ chat = model.start_chat(history=[])  # Create a persistent chat instance
 sohbet_gecmisi = []  # SOHBET GEÇMİŞİNİ TUTACAK LİSTE (YENİ!)
 chat_histories = {}
 current_chat_id = None
+MAX_CHATS = 10  # Maksimum sohbet sayısı sabiti
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global sohbet_gecmisi, chat, current_chat_id
     
-    # Hiç sohbet yoksa veya yeni başlatılıyorsa
+    # Yeniden yükleme sırasında mevcut sohbeti koru
     if not current_chat_id:
-        current_chat_id = str(time.time())
+        if chat_histories:
+            # En son sohbeti yükle
+            current_chat_id = next(iter(chat_histories))
+            sohbet_gecmisi = chat_histories[current_chat_id]["messages"].copy()
+            chat = model.start_chat(history=[])
+        else:
+            # İlk defa açılıyorsa yeni sohbet başlat
+            current_chat_id = str(time.time())
+            welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
+            sohbet_gecmisi = [{
+                "rol": "ai",
+                "icerik": welcome_message
+            }]
+            chat_histories[current_chat_id] = {
+                "messages": sohbet_gecmisi.copy(),
+                "title": "Yeni Sohbet",
+                "timestamp": time.time()
+            }
     
     if request.method == 'POST':
         if request.form.get('action') == 'clear':
+            # Mevcut sohbeti sıfırla ama ID'yi koru
+            old_chat_id = current_chat_id
             sohbet_gecmisi = []
-            chat = model.start_chat(history=[])  # Reset chat history when clearing
+            chat = model.start_chat(history=[])
             welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
             sohbet_gecmisi.append({
                 "rol": "ai",
                 "icerik": welcome_message
             })
             
-            # Yeni sohbet oluşturulduğunda
-            if current_chat_id:
-                chat_histories[current_chat_id] = {
-                    "messages": sohbet_gecmisi.copy(),
-                    "title": "Yeni Sohbet",
-                    "timestamp": time.time()
-                }
-            
-            return render_template('index.html', sohbet_gecmisi=sohbet_gecmisi, chat_histories=chat_histories)
-            
-        mesaj = request.form['mesaj']
-        if mesaj.strip():  # Boş mesaj kontrolü
-            quest = Quest(mesaj, time.time())
-            sohbet_gecmisi.append({"rol": "user", "icerik": mesaj, "quest_id": quest.quest_id})
-            
-            # Use the chat instance to maintain conversation history
-            response = chat.send_message(mesaj)
-            
-            # Markdown'ı güvenli bir şekilde HTML'e dönüştür
-            html_content = markdown2.markdown(
-                response.text,
-                extras=['fenced-code-blocks', 'tables', 'break-on-newline']
-            )
-            
-            # HTML'i temizle ve güvenli etiketlere izin ver
-            cleaned_html = bleach.clean(
-                html_content,
-                tags=['p', 'strong', 'em', 'code', 'pre', 'br', 'a'],
-                attributes={'a': ['href']},
-                strip=True
-            )
-            
-            sohbet_gecmisi.append({
-                "rol": "ai", 
-                "icerik": Markup(cleaned_html),
-                "yeni_yanit": True  # Yeni yanıt flag'i
-            })
-        
-        # Sohbeti geçmişe kaydet
-        if current_chat_id:
-            chat_histories[current_chat_id] = {
+            # Aynı ID ile yeni sohbeti kaydet
+            chat_histories[old_chat_id] = {
                 "messages": sohbet_gecmisi.copy(),
-                "title": get_chat_title(sohbet_gecmisi),
+                "title": "Yeni Sohbet",
                 "timestamp": time.time()
             }
+            
+            return render_template('index.html', 
+                                sohbet_gecmisi=sohbet_gecmisi, 
+                                chat_histories=chat_histories,
+                                current_chat_id=old_chat_id)
+        
+        elif request.form.get('action') == 'send' and request.form.get('mesaj', '').strip():
+            # Sadece gönder butonu tıklandığında ve mesaj boş değilse işlem yap
+            mesaj = request.form['mesaj'].strip()
+            
+            # Duplicate kontrolü
+            if not any(m.get("icerik") == mesaj for m in sohbet_gecmisi[-2:]):
+                quest = Quest(mesaj, time.time())
+                sohbet_gecmisi.append({"rol": "user", "icerik": mesaj, "quest_id": quest.quest_id})
+                
+                # AI yanıtı
+                response = chat.send_message(mesaj)
+                
+                # Markdown ve HTML işlemleri
+                html_content = markdown2.markdown(
+                    response.text,
+                    extras=['fenced-code-blocks', 'tables', 'break-on-newline']
+                )
+                
+                cleaned_html = bleach.clean(
+                    html_content,
+                    tags=['p', 'strong', 'em', 'code', 'pre', 'br', 'a'],
+                    attributes={'a': ['href']},
+                    strip=True
+                )
+                
+                sohbet_gecmisi.append({
+                    "rol": "ai", 
+                    "icerik": Markup(cleaned_html),
+                    "yeni_yanit": True
+                })
+                
+                # Sohbeti kaydet
+                if current_chat_id:
+                    chat_histories[current_chat_id] = {
+                        "messages": sohbet_gecmisi.copy(),
+                        "title": get_chat_title(sohbet_gecmisi),
+                        "timestamp": time.time()
+                    }
     
     # Sohbet geçmişini tarihe göre sırala
     sorted_histories = dict(sorted(
@@ -105,6 +130,13 @@ def new_chat():
     app.logger.info("Yeni sohbet isteği alındı")
     
     try:
+        # Mevcut sohbet sayısını kontrol et
+        if len(chat_histories) >= MAX_CHATS:
+            return jsonify({
+                "status": "error",
+                "message": "Artık sohbetleri temizleyerek kullanın, performans ve veri güvenliği için önemlidir."
+            }), 400
+            
         # Yeni benzersiz ID oluştur
         new_chat_id = str(time.time())
         app.logger.info(f"Yeni sohbet ID: {new_chat_id}")
