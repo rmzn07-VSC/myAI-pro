@@ -1,12 +1,32 @@
-myAI-LocalProject de "venv\Scripts\activate" yi çalıştırıp python u aktif ediyorsun,
+myAI-LocalProject de uygun venv eğer yoksa "python -m venv venv" ile venv oluşturuyorsun, 
+ "venv\Scripts\activate" yi çalıştırıp projeyi aktif ediyorsun,
+
+-------------------------------------------------------------------------------------------------------------
 
 cd myAI_app a gidiuyosun ve sonra "python app.py" yazıp server i başlatıyorsun
 
-yeni venv klasörğnde "pip install Flask markupsafe google-generativeai python-dotenv markdown2 bleach load_dotenv"
-bu kodu kullan.
+-------------------------------------------------------------------------------------------------------------
+
+yeni venv oluşturduğunda "pip install Flask markupsafe google-generativeai python-dotenv markdown2 bleach load_dotenv"
+yaz ve kütüphaneleri indir.
+
+-------------------------------------------------------------------------------------------------------------
 
 pip yükseltmek için "python.exe -m pip install --upgrade pip" kullan
 
+-------------------------------------------------------------------------------------------------------------
 
- Kodda sonradan güncelleme yaptığınız zaman en baştan değil de bu sefer sırasıyla "git add .", "git commit -m "commitAdi" ",
- "git push -u origin master" komutlarını kullanmanız gerekiyor. 
+Projeni github a aktarmak için sırası ile:
+
+1. önce cd ile projenin ana klasörüne git
+2.   git init
+3.   git add .
+4.   git commit -m "commitAdi"
+5.   git remote add origin https://github.com/rmzn07-VSC/myAI-pro.git
+6.   git push -u origin main
+
+Projeni güncellemek için ise:
+
+1.   git add .
+2.   git commit -m "neEklendiyseOnuYaz"
+3.   git push origin main
