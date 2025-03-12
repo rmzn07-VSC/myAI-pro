@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>myAI ile Sohbet Et! - ÖZGÜR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>myAI ile Sohbet Et!</h1>
+
+        <div id="chat-container">
+            {% for mesaj in sohbet_gecmisi %}  <!-- SOHBET GEÇMİŞİNİ DÖNGÜYLE GÖSTERME KISMI BAŞLANGICI -->
+                <div class="message {{ mesaj.rol }}-message" {% if mesaj.get('yeni_yanit') %}data-new-response="true"{% endif %}> <!-- MESAJ KUTUSU (KULLANICI VEYA YAPAY ZEKA MESAJI) -->
+                    <div class="message-content">
+                        {% if mesaj.rol</div> == 'ai' %}
+                            <h2>myAI Cevabı:</h2>
+                        {% else %}
+                            <h2>Sen:</h2>
+                        {% endif %}
+                        <p>{{ mesaj.icerik | safe }}</p>
+                    </div>
+                </div>
+            {% endfor %} <!-- SOHBET GEÇMİŞİNİ DÖNGÜYLE GÖSTERME KISMI BİTİŞİ -->
+        </div>
+
+        <form method="POST" class="input-form" id="chat-form">
+            <label for="mesaj">Mesajınız:</label>
+            <textarea id="mesaj" name="mesaj" rows="4"></textarea>
+            <div class="button-group">
+                <button type="submit" name="action" value="send">Gönder</button>
+                <button type="submit" name="action" value="clear" class="clear-button" style="background-color: #ff0000;">Temizle</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Enter tuşu için olan kodu güncelle
+        document.getElementById('mesaj').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const form = document.getElementById('chat-form');
+                const textarea = document.getElementById('mesaj');
+                const currentValue = textarea.value;
+                
+                form.submit();
+                
+                // Form submit sonrası textarea'yı temizle ve focus'u koru
+                setTimeout(() => {
+                    textarea.value = '';
+                    textarea.focus();
+                }, 10);
+            }
+        });
+
+        // Otomatik kaydırma fonksiyonu
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Sayfa yüklendiğinde en alta kaydır
+        window.addEventListener('load', scrollToBottom);
+
+        // Yeni AI yanıtı geldiğinde en alta kaydır
+        const chatObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1 && // Element node
+                node.classList.contains('ai-message') && 
+                node.getAttribute('data-new-response')) {
+                scrollToBottom();
+                }
+            });
+            });
+        });
+        
+        chatObserver.observe(document.getElementById('chat-container'), {
+            childList: true,
+            subtree: true
+        });
+
+        // Sayfa ilk yüklendiğinde en alta kaydır
+        document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+
+
+        // Kod bloklarına kopyalama butonu ekle ve tüm mesajları izle
+        function addCopyButtonToAllResponses() {
+            const aiMessages = document.querySelectorAll('.message.ai-message');
+            aiMessages.forEach(function(message) {
+            const preBlocks = message.querySelectorAll('pre');
+            preBlocks.forEach(function(block) {
+                if (!block.querySelector('.copy-button')) {
+                const button = document.createElement('button');
+                button.className = 'copy-button';
+                button.innerHTML = 'Kopyala';
+                
+                block.style.position = 'relative';
+                block.appendChild(button);
+
+                button.addEventListener('click', async function() {
+                    try {
+                    const code = block.textContent.replace('Kopyala', '').replace('Kopyalandı!', '').trim();
+                    await navigator.clipboard.writeText(code);
+                    button.innerHTML = 'Kopyalandı!';
+                    setTimeout(() => {
+                        button.innerHTML = 'Kopyala';
+                    }, 2000);
+                    } catch (err) {
+                    console.error('Kopyalama hatası:', err);
+                    alert('Kopyalama işlemi başarısız oldu.');
+                    }
+                });
+                }
+            });
+        });
+    }
+
+    // Sayfa yüklendiğinde tüm mesajlara kopyalama butonu ekle
+    window.addEventListener('load', function() {
+        addCopyButtonToAllResponses();
+    });
+
+    // Her 500ms'de bir tüm mesajları kontrol et
+    setInterval(addCopyButtonToAllResponses, 500);
+
+    // İlk yüklendiğinde duplicate kontrolü
+    function initialDuplicateCheck() {
+        const messages = document.querySelectorAll('.user-message');
+        const contents = new Map();
+        
+        messages.forEach(msg => {
+            const content = msg.querySelector('p').innerText.toLowerCase().trim();
+            
+            if (contents.has(content)) {
+                const userMessage = msg;
+                const aiMessage = msg.nextElementSibling;
+                
+                if (aiMessage && aiMessage.classList.contains('ai-message')) {
+                    userMessage.remove();
+                    aiMessage.remove();
+                }
+            } else {
+                contents.set(content, true);
+            }
+        });
+    }
+
+    // Sayfa yüklendiğinde duplicate kontrolü yap
+    initialDuplicateCheck();
+
+    // Form gönderildiğinde
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
+        if (e.submitter.value === 'send') {
+            // Yeni yanıt geldiğinde animasyon ve kopyalama butonu ekle
+            setTimeout(() => {
+                const newResponses = document.querySelectorAll('.message.ai-message[data-new-response="true"]');
+                if (newResponses.length > 0) {
+                    const lastResponse = newResponses[newResponses.length - 1];
+                    if (!lastResponse.hasAttribute('data-animated')) {
+                        const content = lastResponse.querySelector('.message-content');
+                        animateTyping(content);
+                        lastResponse.setAttribute('data-animated', 'true');
+                    }
+                }
+                addCopyButtonToAllResponses();
+            }, 1000);
+
+            // Duplicate kontrolü yap
+            setTimeout(initialDuplicateCheck, 1000);
+        }
+    });
+
+        // Her 500ms'de bir son mesajı kontrol et
+        setInterval(addCopyButtonToLatestResponse, 500);
+
+        // Form gönderildiğinde de kontrol et
+        document.getElementById('chat-form').addEventListener('submit', function() {
+            setTimeout(addCopyButtonToLatestResponse, 1000);
+        });
+
+        // Duplicate quest checker
+        let checkCount = 0;
+        const maxChecks = 15;
+        
+        function checkDuplicateQuests() {
+            const messages = document.querySelectorAll('.user-message');
+            const contents = new Map();
+            
+            messages.forEach(msg => {
+                const content = msg.querySelector('p').innerText.toLowerCase().trim();
+                
+                if (contents.has(content)) {
+                    // Find the user message and its corresponding AI response
+                    const userMessage = msg;
+                    const aiMessage = msg.nextElementSibling;
+                    
+                    // Remove both messages instantly
+                    if (aiMessage && aiMessage.classList.contains('ai-message')) {
+                        userMessage.remove();
+                        aiMessage.remove();
+                    }
+                } else {
+                    contents.set(content, true);
+                }
+            });
+
+            checkCount++;
+            if (checkCount < maxChecks) {
+                setTimeout(checkDuplicateQuests, 1000);
+            }
+        }
+
+        // Start checking when page loads
+        window.addEventListener('load', () => {
+            checkDuplicateQuests();
+        });
+
+        // Check after new message is sent
+        document.getElementById('chat-form').addEventListener('submit', () => {
+            setTimeout(checkDuplicateQuests, 1000);
+        });
+
+       
+
+     
+
+        // Her 2 saniyede bir son mesajı kontrol et
+        setInterval(checkLastMessage, 10);
+
+        // Form gönderildiğinde
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            if (e.submitter.value === 'send') {
+                // Form gönderildikten 1 saniye sonra kontrolü başlat
+                setTimeout(checkLastMessage, 10);
+            }
+        });
+
+        
+
+        // Yeni AI yanıtlarını izle
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.classList && 
+                        node.classList.contains('ai-message') && 
+                        node.getAttribute('data-new-response')) {
+                        const messageContent = node.querySelector('.message-content');
+                        if (messageContent) {
+                            startTypingAnimation(messageContent);
+                        }
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.getElementById('chat-container'), {
+            childList: true,
+            subtree: true
+        });
+    </script>
+</body>
+</html>

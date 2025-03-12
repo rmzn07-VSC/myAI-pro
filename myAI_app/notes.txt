@@ -1,0 +1,8 @@
+myAI-LocalProject de "venv\Scripts\activate" yi çalıştırıp python u aktif ediyorsun,
+
+cd myAI_app a gidiuyosun ve sonra "python app.py" yazıp server i başlatıyorsun
+
+yeni venv klasörğnde "pip install Flask markupsafe google-generativeai python-dotenv markdown2 bleach load_dotenv"
+bu kodu kullan.
+
+pip yükseltmek için "python.exe -m pip install --upgrade pip" kullan

@@ -1,0 +1,1 @@
+Yapay zeka geliştiriyorum, diğer bir değişle özelleştiriyorum.
