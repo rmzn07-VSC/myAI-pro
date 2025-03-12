@@ -1,9 +1,21 @@
 /* style.css DOSYASININ İÇERİĞİ BAŞLIYOR! (ÖZGÜR'DEN KOYU TEMA BOMBASI!) */
 
+/* Ana tema renkleri ve değişkenler */
+:root {
+    --bg-dark: #121212;
+    --bg-darker: #1a1a1a;
+    --bg-chat: #242424;
+    --ai-message-bg: #2d4263;
+    --user-message-bg: #1e4d4d;
+    --text-light: #f0f0f0;
+    --text-white: #fff;
+}
+
+/* Temel stiller */
 body {
     font-family: sans-serif;
-    background-color: #121212; /* ARKA PLAN RENGİ (BACKGROUND COLOR) - KOYU GRİ */
-    color: #f0f0f0; /* METİN RENGİ (COLOR) - AÇIK GRİ */
+    background-color: var(--bg-dark);
+    color: var(--text-light);
     margin: 0;
     padding: 0;
     display: flex;
@@ -13,33 +25,44 @@ body {
 }
 
 .container {
-    width: 95%;
-    max-width: 1500px;
-    padding: 40px;
-    background-color: #1a1a1a;
-    border-radius: 16px;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    width: 95%;          /* Container width */
+    max-width: 1500px;   /* Container max width */
+}
+
+.main-container {
+    width: 80%;          /* Main container width */
+    max-width: 1200px;   /* Main container max width */
+}
+
+.input-form .input-group {
+    max-width: 1200px;   /* Input form width */
 }
 
 h1 {
     text-align: center;
     margin-bottom: 20px;
-    color: #fff; /* METİN RENGİ (COLOR) - BEYAZ */
+    color: var(--text-white);
 }
 
+/* Chat container özellikleri */
 #chat-container {
     height: 600px;
-    padding: 25px;
-    background-color: #242424;
+    width: 95%;         /* Desktop için genişlik */
+    max-width: 1200px;  /* Maksimum genişlik */
+    margin: -50px auto; /* Changed from -50px to -30px to move down 20px */
+    padding: 15px;
+    background-color: var(--bg-chat);
     border: none;
     border-radius: 12px;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
-    overflow-y: scroll;
+    overflow-y: auto;
     margin-bottom: 30px;
     display: flex;
     flex-direction: column;
+    padding-bottom: 150px;
 }
 
+/* Mesaj stilleri */
 .message {
     position: relative;
     margin-bottom: 20px;
@@ -51,7 +74,7 @@ h1 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     clear: both;
     width: fit-content;
-    color: #fff; /* METİN RENGİ (COLOR) - BEYAZ MESAJ METNİ */
+    color: var(--text-white);
 }
 
 .message h2 {
@@ -63,19 +86,20 @@ h1 {
 }
 
 .ai-message {
-    background-color: #2d4263;
+    background-color: var(--ai-message-bg);
     margin-right: auto;
     border-bottom-left-radius: 5px;
     float: left;
 }
 
 .user-message {
-    background-color: #1e4d4d;
+    background-color: var(--user-message-bg);
     margin-left: auto;
     border-bottom-right-radius: 5px;
     float: right;
 }
 
+/* Mesaj içeriği stilleri */
 .message-content {
     word-wrap: break-word;
     line-height: 1.6;
@@ -88,32 +112,67 @@ h1 {
 }
 
 .input-form {
-    display: flex;
-    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    margin-bottom: 20px;
+    left: 260px; /* Sidebar genişliği kadar */
+    right: 0;
+    background-color: rgba(0, 0, 0, 0);
+    padding: 15px;
+    padding-left: 90px;
+    padding-right: 90px;
+    z-index: 1000;
+}
+
+.input-form .input-group {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.input-form textarea {
+    height: 50px;
+    background-color: rgba(42, 42, 42, 0.95);
+    border: 2px solid #404040;
+    color: var(--text-white);
+    resize: none;
+    padding: 12px;
+}
+
+.input-form .btn {
+    padding: 0 20px;
+    border: none;
+}
+
+.input-form .btn i {
+    font-size: 1.2rem;
 }
 
 .input-form label {
     margin-bottom: 5px;
     font-weight: bold;
-    color: #fff; /* METİN RENGİ (COLOR) - BEYAZ ETİKET METNİ */
+    color: var(--text-white);
 }
 
 .input-form textarea {
     padding: 15px;
     font-size: 16px;
-    min-height: 60px;
+    height: 80px; /* Sabit yükseklik */
     border-radius: 12px;
-    background-color: #2a2a2a;
+    background-color: rgba(42, 42, 42, 0.95);
     border: 2px solid #404040;
     transition: border 0.3s ease;
     margin-bottom: 10px;
-    resize: vertical;
-    color: #fff; /* METİN RENGİ (COLOR) - BEYAZ GİRİŞ ALANI METNİ */
+    resize: none; /* Boyut değiştirmeyi kaldır */
+    color: var(--text-white);
+    animation: glow 2s ease-in-out infinite;
+    backdrop-filter: blur(5px);
 }
 
 .input-form textarea:focus {
     border-color: #4a90e2;
     outline: none;
+    animation: glow 1s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(74, 144, 226, 0.4);
 }
 
 .input-form button {
@@ -140,7 +199,7 @@ h1 {
 }
 
 #chat-container::-webkit-scrollbar-track {
-    background: #1a1a1a;
+    background: var(--bg-darker);
     border-radius: 4px;
 }
 
@@ -152,8 +211,6 @@ h1 {
 #chat-container::-webkit-scrollbar-thumb:hover {
     background: #5a5a5a;
 }
-
-
 
 /* Mesaj içeriği için ek stiller */
 .ai-message .message-content {
@@ -175,13 +232,13 @@ h1 {
 
 .ai-message::after {
     left: -4px;
-    background-color: #2d4263;
+    background-color: var(--ai-message-bg);
     transform: rotate(45deg);
 }
 
 .user-message::after {
     right: -4px;
-    background-color: #1e4d4d;
+    background-color: var(--user-message-bg);
     transform: rotate(45deg);
 }
 
@@ -234,6 +291,7 @@ h1 {
     overflow-x: auto;
     border: 1px solid #3d3d3d;
     margin: 10px 0;
+    position: relative;
 }
 
 .message-content pre code {
@@ -262,7 +320,7 @@ h1 {
     right: 5px;
     padding: 5px 10px;
     background-color: #4a4a4a;
-    color: #fff;
+    color: var(--text-white);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -277,4 +335,227 @@ h1 {
 
 .copy-button:hover {
     background-color: #5a5a5a;
+}
+
+/* Textarea animasyonları */
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 5px rgba(74, 144, 226, 0.2),
+                    0 0 10px rgba(74, 144, 226, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(74, 144, 226, 0.4),
+                    0 0 30px rgba(74, 144, 226, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(74, 144, 226, 0.2),
+                    0 0 10px rgba(74, 144, 226, 0.2);
+    }
+}
+
+/* Responsive düzenlemeler */
+@media (max-width: 768px) {
+    .message {
+        max-width: 85%;
+    }
+    
+    .input-form {
+        padding: 10px;
+        padding-left: 40px;
+        padding-right: 0px;
+    }
+    
+    .input-form .btn {
+        padding: 0 15px;
+    }
+    
+    #chat-container {
+        padding-bottom: 100px;
+    }
+
+    .main-container {
+        padding-bottom: 150px; /* Mobil için daha az padding */
+    }
+}
+
+/* Ana uygulama container'ı */
+.app-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar stilleri */
+.sidebar {
+    width: 260px;
+    background-color: var(--bg-darker);
+    height: 100vh;
+    padding: 20px;
+    border-right: 1px solid #404040;
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+/* Yeni sohbet butonu */
+.new-chat-btn {
+    background-color: #404040;
+    color: var(--text-white);
+    border: 1px solid #505050;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.new-chat-btn:hover {
+    background-color: #505050;
+    transform: translateY(-2px);
+}
+
+/* Geçmiş sohbetler listesi */
+.chat-history {
+    margin-top: 20px;
+}
+
+.history-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.history-item:hover {
+    background-color: #404040;
+}
+
+.history-item i {
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+
+/* Main container düzenlemesi */
+.main-container {
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Ana içerik alanı */
+.main-content {
+    flex: 1;
+    margin-left: 260px; /* Sidebar genişliği kadar */
+    height: 100vh;
+    overflow-y: auto;
+    position: relative;
+    padding: 15px;
+    padding-bottom:     0px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Responsive düzenlemeler */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        z-index: 1002;
+        transition: left 0.3s ease;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .input-form {
+        left: 0;
+    }
+
+    /* Mobil menü toggle butonu */
+    .menu-toggle {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1003;
+        background: var(--bg-darker);
+        border: none;
+        color: var(--text-white);
+        padding: 8px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+}
+
+.main-container {
+    height: calc(100vh - 120px); /* Textarea için alan bırak */
+    margin-bottom: 120px; /* Textarea'dan uzaklaştır */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1001;
+    background-color: var(--bg-dark);
+    width: 80%; /* Desktop için genişlik */
+    max-width: 1200px; /* Maksimum genişlik */
+    margin-left: auto;
+    margin-right: auto;
+}
+.btn-success, .btn-outline-danger {
+    height: 80px;
+}
+
+.text-center {
+    animation: glowText 3s ease-in-out infinite;
+    background: linear-gradient(45deg, #00ffff, #ff00ff, #00ff00, #ff0000);
+    background-size: 300% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+@keyframes glowText {
+    0% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5));
+    }
+    25% {
+        background-position: 100% 50%;
+        filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.5));
+    }
+    50% {
+        background-position: 200% 50%;
+        filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.5));
+    }
+    75% {
+        background-position: 300% 50%;
+        filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+    }
+    100% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5));
+    }
+}   
+/* Textarea placeholder rengi */
+.input-form textarea::placeholder {
+    color: #ffffff; /* İstediğiniz renk kodunu buraya yazabilirsiniz */
+    opacity: 0.5;
+}
+
+.input-form textarea:focus::placeholder {
+    color: #000000;
+    opacity: 0.5;
 }
