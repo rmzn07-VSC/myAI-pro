@@ -8,5 +8,5 @@ bu kodu kullan.
 pip yükseltmek için "python.exe -m pip install --upgrade pip" kullan
 
 
- Kodda sonradan güncelleme yaptığınız zaman en baştan değil de bu sefer sırasıyla git add, git commit,
- git push komutlarını kullanmanız gerekiyor. 
+ Kodda sonradan güncelleme yaptığınız zaman en baştan değil de bu sefer sırasıyla "git add .", "git commit -m "commitAdi" ",
+ "git push -u origin master" komutlarını kullanmanız gerekiyor. 
