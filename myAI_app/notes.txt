@@ -31,3 +31,30 @@ Projeni güncellemek için ise:
 2.   git commit -m "neEklendiyseOnuYaz"
 3.   git branch -M main
 4.   git push origin main
+
+
+...tanımları:
+
+    git init: Yeni bir Git deposu oluşturur.
+
+    git clone: Mevcut bir depoyu kopyalar.
+
+    git add: Değişiklikleri staging alanına ekler.
+
+    git commit: Değişiklikleri kaydeder.
+
+    git push: Yerel commit'leri uzak depoya gönderir.
+
+    git pull: Uzak depodan değişiklikleri alır ve yerel depoyla birleştirir.
+
+    git status: Değişiklikleri ve staging alanının durumunu gösterir.
+
+    git branch: Branch'lerle çalışmak için kullanılır.
+
+    git checkout: Branch'ler arasında geçiş yapar veya yeni branch oluşturur.
+
+    git merge: Branch'leri birleştirir.
+
+    git log: Commit geçmişini görüntüler.
+
+    -------------------------------------------------------------------------------------------------------------
