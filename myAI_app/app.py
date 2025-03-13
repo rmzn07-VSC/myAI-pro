@@ -63,7 +63,7 @@ def index():
         else:
             # İlk defa açılıyorsa yeni sohbet başlat
             current_chat_id = str(time.time())
-            welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
+            welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
             sohbet_gecmisi = [{
                 "rol": "ai",
                 "icerik": welcome_message
@@ -80,7 +80,7 @@ def index():
             old_chat_id = current_chat_id
             sohbet_gecmisi = []
             chat = model.start_chat(history=[])
-            welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
+            welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
             sohbet_gecmisi.append({
                 "rol": "ai",
                 "icerik": welcome_message
@@ -188,7 +188,7 @@ def new_chat():
         chat = model.start_chat(history=[])
         
         # Hoşgeldin mesajı
-        welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
+        welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
         sohbet_gecmisi = [{
             "rol": "ai",
             "icerik": welcome_message
