@@ -362,7 +362,7 @@ h1 {
     .input-form {
         padding: 10px;
         padding-left: 40px;
-        padding-right: 0px;
+        padding-right: 40px;
     }
     
     .input-form .btn {
@@ -559,9 +559,104 @@ h1 {
 .input-form textarea::placeholder {
     color: #ffffff; /* İstediğiniz renk kodunu buraya yazabilirsiniz */
     opacity: 0.5;
+ 
 }
 
 .input-form textarea:focus::placeholder {
     color: #000000;
     opacity: 0.5;
+}
+
+/* Mobil menü butonu */
+.mobile-menu-button {
+    position: fixed;
+    bottom: 130px;
+    right: 90px; /* Sağ tarafta olması için */
+    z-index: 1003;
+    background: rgba(74, 144, 226, 0.8); /* Daha belirgin bir renk */
+    border: none;
+    color: var(--text-white);
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 45px;
+    height: 45px;
+    display: none;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.mobile-menu-button:hover {
+    background: rgba(74, 144, 226, 1);
+}
+
+/* Responsive düzenlemeler */
+@media (max-width: 768px) {
+    .message {
+        max-width: 85%;
+    }
+    
+    .input-form {
+        padding: 10px;
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+    
+    .input-form .btn {
+        padding: 0 15px;
+    }
+    
+    #chat-container {
+        padding-bottom: 100px;
+    }
+
+    .main-container {
+        padding-bottom: 150px; /* Mobil için daha az padding */
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        z-index: 1002;
+        transition: left 0.3s ease;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .input-form {
+        left: 0;
+    }
+
+    /* Mobil menü toggle butonu */
+    .menu-toggle {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1003;
+        background: var(--bg-darker);
+        border: none;
+        color: var(--text-white);
+        padding: 8px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .mobile-menu-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        right: 40px; /* Mobilde sağ kenar boşluğunu azalt */
+    }
+    
+    .sidebar.active + .main-content .mobile-menu-button {
+        transform: rotate(180deg);
+        background: rgba(220, 53, 69, 0.8);
+    }
 }
