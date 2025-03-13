@@ -49,6 +49,15 @@ def is_duplicate_last_message(message):
     last_messages = get_last_messages()
     return message in last_messages
 
+def load_system_prompt():
+    """Sistem promptunu dosyadan yükle"""
+    try:
+        prompt_path = os.path.join('prompts', 'system_prompt.txt')
+        with open(prompt_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError:
+        return "Sen ÖzGür.AI isimli bir yapay zeka asistanısın."
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global sohbet_gecmisi, chat, current_chat_id
@@ -60,6 +69,8 @@ def index():
             current_chat_id = next(iter(chat_histories))
             sohbet_gecmisi = chat_histories[current_chat_id]["messages"].copy()
             chat = model.start_chat(history=[])
+            # Sistem promptunu gönder
+            chat.send_message(load_system_prompt())
         else:
             # İlk defa açılıyorsa yeni sohbet başlat
             current_chat_id = str(time.time())
@@ -80,6 +91,8 @@ def index():
             old_chat_id = current_chat_id
             sohbet_gecmisi = []
             chat = model.start_chat(history=[])
+            # Sistem promptunu gönder
+            chat.send_message(load_system_prompt())
             welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
             sohbet_gecmisi.append({
                 "rol": "ai",
@@ -186,6 +199,8 @@ def new_chat():
         # Yeni sohbet başlat
         sohbet_gecmisi = []
         chat = model.start_chat(history=[])
+        # Sistem promptunu gönder
+        chat.send_message(load_system_prompt())
         
         # Hoşgeldin mesajı
         welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
@@ -242,6 +257,8 @@ def load_chat(chat_id):
             # Yeni sohbeti yükle
             sohbet_gecmisi = chat_histories[chat_id]["messages"].copy()
             chat = model.start_chat(history=[])  # Yeni chat instance
+            # Sistem promptunu gönder
+            chat.send_message(load_system_prompt())
             current_chat_id = chat_id
             
             app.logger.info(f"Sohbet başarıyla yüklendi: {chat_id}")
