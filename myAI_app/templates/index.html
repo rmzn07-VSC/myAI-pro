@@ -736,5 +736,132 @@
             });
         });
     </script>
+
+    <script>
+        // Sayfa yüklendiğinde ve her 2 saniyede bir son mesajları kontrol et
+        function checkLastMessages() {
+            const allMessages = document.querySelectorAll('.message');
+            if (allMessages.length < 2) return; // Yetersiz mesaj varsa çık
+            
+            // Son iki mesajı al
+            const lastMessages = Array.from(allMessages).slice(-2);
+            
+            // Önceki mesajları kontrol et (son iki mesaj hariç)
+            for (let i = 0; i < allMessages.length - 2; i++) {
+                const currentMsg = allMessages[i];
+                
+                // Eğer kullanıcı mesajıysa kontrol et
+                if (currentMsg.classList.contains('user-message')) {
+                    const currentContent = currentMsg.querySelector('p').innerText.toLowerCase().trim();
+                    const lastUserContent = lastMessages[0].querySelector('p')?.innerText.toLowerCase().trim();
+                    
+                    // Eğer aynı içerik varsa ve bir AI yanıtı varsa
+                    if (currentContent === lastUserContent && allMessages[i + 1]?.classList.contains('ai-message')) {
+                        console.log('Duplicate mesaj bulundu, siliniyor...');
+                        lastMessages.forEach(msg => msg.remove());
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Sayfa yüklendiğinde kontrol et
+        window.addEventListener('load', () => {
+            setTimeout(checkLastMessages, 1000); // 1 saniye bekle ve kontrol et
+        });
+
+        // Her 2 saniyede bir kontrol et
+        setInterval(checkLastMessages, 2000);
+    </script>
+
+    <script>
+        // Tüm sohbetlerde duplicate kontrolü yapan fonksiyon
+        function checkDuplicateAcrossAllChats(message) {
+            const allMessages = document.querySelectorAll('.user-message p');
+            message = message.toLowerCase().trim();
+            
+            for (let msg of allMessages) {
+                if (msg.innerText.toLowerCase().trim() === message) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Form submit event listener'ı güncelle
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            if (e.submitter.value === 'send') {
+                const message = document.getElementById('mesaj').value.trim();
+                if (checkDuplicateAcrossAllChats(message)) {
+                    e.preventDefault(); // Form gönderimini engelle
+                    alert('Bu mesaj daha önce sorulmuş. Farklı bir soru sormayı deneyin.');
+                    document.getElementById('mesaj').value = ''; // Textarea'yı temizle
+                    return false;
+                }
+            }
+        });
+
+        // Enter tuşu için olan kontrolü de güncelle
+        document.getElementById('mesaj').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const message = this.value.trim();
+                if (checkDuplicateAcrossAllChats(message)) {
+                    e.preventDefault();
+                    alert('Bu mesaj daha önce sorulmuş. Farklı bir soru sormayı deneyin.');
+                    this.value = '';
+                    return false;
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Son mesajları kontrol eden fonksiyon
+        function getLastUserMessages() {
+            const lastMessages = [];
+            const chatHistories = document.querySelectorAll('.chat-history .history-item');
+            
+            chatHistories.forEach(chat => {
+                const messages = chat.querySelectorAll('.user-message');
+                if (messages.length > 0) {
+                    const lastMessage = messages[messages.length - 1];
+                    const content = lastMessage.querySelector('p').innerText.toLowerCase().trim();
+                    lastMessages.push(content);
+                }
+            });
+            
+            return lastMessages;
+        }
+
+        // Form submit event listener'ı güncelle
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            if (e.submitter.value === 'send') {
+                const message = document.getElementById('mesaj').value.trim().toLowerCase();
+                const lastMessages = getLastUserMessages();
+                
+                if (lastMessages.includes(message)) {
+                    e.preventDefault();
+                    alert('Bu mesaj başka bir sohbetin son mesajı olarak zaten var.');
+                    document.getElementById('mesaj').value = '';
+                    return false;
+                }
+            }
+        });
+
+        // Enter tuşu kontrolü güncelle
+        document.getElementById('mesaj').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const message = this.value.trim().toLowerCase();
+                const lastMessages = getLastUserMessages();
+                
+                if (lastMessages.includes(message)) {
+                    e.preventDefault();
+                    alert('Bu mesaj başka bir sohbetin son mesajı olarak zaten var.');
+                    this.value = '';
+                    return false;
+                }
+            }
+        });
+    </script>
 </body>
 </html>

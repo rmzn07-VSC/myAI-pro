@@ -21,6 +21,33 @@ chat_histories = {}
 current_chat_id = None
 MAX_CHATS = 10  # Maksimum sohbet sayısı sabiti
 
+def is_duplicate_message_across_chats(message):
+    """Tüm sohbetlerde aynı mesajı kontrol et"""
+    message = message.strip().lower()
+    for chat_data in chat_histories.values():
+        messages = chat_data["messages"]
+        for msg in messages:
+            if msg["rol"] == "user" and msg["icerik"].strip().lower() == message:
+                return True
+    return False
+
+def get_last_messages():
+    """Her sohbetteki en son kullanıcı mesajını al"""
+    last_messages = []
+    for chat_data in chat_histories.values():
+        messages = chat_data["messages"]
+        # Sondan başlayarak ilk kullanıcı mesajını bul
+        for msg in reversed(messages):
+            if msg["rol"] == "user":
+                last_messages.append(msg["icerik"].strip().lower())
+                break
+    return last_messages
+
+def is_duplicate_last_message(message):
+    """Sadece son mesajları kontrol et"""
+    message = message.strip().lower()
+    last_messages = get_last_messages()
+    return message in last_messages
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -72,9 +99,15 @@ def index():
                                 current_chat_id=old_chat_id)
         
         elif request.form.get('action') == 'send' and request.form.get('mesaj', '').strip():
-            # Sadece gönder butonu tıklandığında ve mesaj boş değilse işlem yap
             mesaj = request.form['mesaj'].strip()
             
+            # Sadece son mesajlarda duplicate kontrolü
+            if is_duplicate_last_message(mesaj):
+                return render_template('index.html', 
+                                    sohbet_gecmisi=sohbet_gecmisi, 
+                                    chat_histories=chat_histories,
+                                    current_chat_id=current_chat_id)
+
             # Duplicate kontrolü
             if not any(m.get("icerik") == mesaj for m in sohbet_gecmisi[-2:]):
                 quest = Quest(mesaj, time.time())
@@ -135,7 +168,7 @@ def new_chat():
             return jsonify({
                 "status": "error",
                 "message": "Artık sohbetleri temizleyerek kullanın, performans ve veri güvenliği için önemlidir."
-            }), 400
+            })
             
         # Yeni benzersiz ID oluştur
         new_chat_id = str(time.time())
@@ -188,7 +221,7 @@ def new_chat():
         return jsonify({
             "status": "error",
             "message": str(e)
-        }), 500
+        })
 
 @app.route('/load_chat/<chat_id>', methods=['GET'])
 def load_chat(chat_id):
@@ -236,10 +269,9 @@ def get_chat_title(messages):
     """İlk kullanıcı mesajını başlık olarak kullan"""
     for message in messages:
         if message["rol"] == "user":
-            title = message["icerik"][:30]  # İlk 30 karakter
-            return title + "..." if len(title) >= 30 else title
+            title = message["icerik"][:12]  # İlk 12 karakter
+            return title + "..."  # Her zaman 3 nokta ekle
     return "Yeni Sohbet"
-
 
 if __name__ == '__main__':
     app.run(debug=True)
