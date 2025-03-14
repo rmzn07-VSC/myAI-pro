@@ -48,7 +48,7 @@ h1 {
 #chat-container {
     height: 600px;
     width: 95%;         /* Desktop için genişlik */
-    max-width: 1200px;  /* Maksimum genişlik */
+    max-width: 1500px;  /* Maksimum genişlik */
     margin: -50px auto; /* Changed from -50px to -30px to move down 20px */
     padding: 15px;
     background-color: var(--bg-chat);
@@ -115,13 +115,15 @@ h1 {
     position: fixed;
     bottom: 0;
     margin-bottom: 20px;
-    left: 260px; /* Sidebar genişliği kadar */
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0);
     padding: 15px;
     padding-left: 90px;
     padding-right: 90px;
     z-index: 1000;
+    width: 100%;
+    max-width: 1200px;
 }
 
 .input-form .input-group {
@@ -361,17 +363,16 @@ h1 {
     
     .input-form {
         padding: 10px;
-        padding-left: 40px;
-        padding-right: 40px;
+        position: fixed;
+        margin-left: 50%;
+        margin-right: 50%;
+        transform: translateX(-50%);
     }
-    
     .input-form .btn {
         padding: 0 15px;
     }
     
-    #chat-container {
-        padding-bottom: 100px;
-    }
+    
 
     .main-container {
         padding-bottom: 150px; /* Mobil için daha az padding */
@@ -386,18 +387,7 @@ h1 {
     overflow: hidden;
 }
 
-/* Sidebar stilleri */
-.sidebar {
-    width: 260px;
-    background-color: var(--bg-darker);
-    height: 100vh;
-    padding: 20px;
-    border-right: 1px solid #404040;
-    overflow-y: auto;
-    position: fixed;
-    left: 0;
-    top: 0;
-}
+
 
 /* Yeni sohbet butonu */
 .new-chat-btn {
@@ -414,36 +404,10 @@ h1 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Geçmiş sohbetler listesi */
-.chat-history {
-    margin-top: 20px;
-}
 
-.history-item {
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: var(--text-light);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: background-color 0.3s ease;
-}
 
-.history-item.active {
-    background-color: #404040;
-    border-left: 3px solid #4a90e2;
-}
 
-.history-item:hover {
-    background-color: #353535;
-}
 
-.history-item i {
-    font-size: 1.2rem;
-    opacity: 0.7;
-}
 
 /* Main container düzenlemesi */
 .main-container {
@@ -456,7 +420,6 @@ h1 {
 /* Ana içerik alanı */
 .main-content {
     flex: 1;
-    margin-left: 260px; /* Sidebar genişliği kadar */
     height: 100vh;
     overflow-y: auto;
     position: relative;
@@ -467,40 +430,7 @@ h1 {
 }
 
 /* Responsive düzenlemeler */
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        left: -260px;
-        z-index: 1002;
-        transition: left 0.3s ease;
-    }
 
-    .sidebar.active {
-        left: 0;
-    }
-
-    .main-content {
-        margin-left: 0;
-    }
-
-    .input-form {
-        left: 0;
-    }
-
-    /* Mobil menü toggle butonu */
-    .menu-toggle {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 1003;
-        background: var(--bg-darker);
-        border: none;
-        color: var(--text-white);
-        padding: 8px;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-}
 
 .main-container {
     height: calc(100vh - 120px); /* Textarea için alan bırak */
@@ -567,29 +497,6 @@ h1 {
     opacity: 0.5;
 }
 
-/* Mobil menü butonu */
-.mobile-menu-button {
-    position: fixed;
-    bottom: 130px;
-    right: 90px; /* Sağ tarafta olması için */
-    z-index: 1003;
-    background: rgba(74, 144, 226, 0.8); /* Daha belirgin bir renk */
-    border: none;
-    color: var(--text-white);
-    padding: 8px;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 45px;
-    height: 45px;
-    display: none;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-.mobile-menu-button:hover {
-    background: rgba(74, 144, 226, 1);
-}
 
 /* Responsive düzenlemeler */
 @media (max-width: 768px) {
@@ -609,22 +516,16 @@ h1 {
     
     #chat-container {
         padding-bottom: 100px;
+        min-width: 100%;
     }
 
     .main-container {
         padding-bottom: 150px; /* Mobil için daha az padding */
     }
 
-    .sidebar {
-        position: fixed;
-        left: -260px;
-        z-index: 1002;
-        transition: left 0.3s ease;
-    }
+  
 
-    .sidebar.active {
-        left: 0;
-    }
+ 
 
     .main-content {
         margin-left: 0;
@@ -634,29 +535,9 @@ h1 {
         left: 0;
     }
 
-    /* Mobil menü toggle butonu */
-    .menu-toggle {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 1003;
-        background: var(--bg-darker);
-        border: none;
-        color: var(--text-white);
-        padding: 8px;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+  
     
-    .mobile-menu-button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        right: 40px; /* Mobilde sağ kenar boşluğunu azalt */
-    }
+   
     
-    .sidebar.active + .main-content .mobile-menu-button {
-        transform: rotate(180deg);
-        background: rgba(220, 53, 69, 0.8);
-    }
+   
 }

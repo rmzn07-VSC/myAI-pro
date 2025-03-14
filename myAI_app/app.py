@@ -194,6 +194,31 @@ def index():
                 
                 cleaned_html = bleach.clean(
                     html_content,
+                                    current_chat_id=current_chat_id)
+            
+            # Sadece son mesajlarda duplicate kontrolü
+            if is_duplicate_last_message(mesaj):
+                return render_template('index.html', 
+                                    sohbet_gecmisi=sohbet_gecmisi, 
+                                    chat_histories=chat_histories,
+                                    current_chat_id=current_chat_id)
+
+            # Duplicate kontrolü
+            if not any(m.get("icerik") == mesaj for m in sohbet_gecmisi[-2:]):
+                quest = Quest(mesaj, time.time())
+                sohbet_gecmisi.append({"rol": "user", "icerik": mesaj, "quest_id": quest.quest_id})
+                
+                # AI yanıtı - Değişiklik burada
+                response = send_ai_message(mesaj, chat)
+                
+                # Markdown ve HTML işlemleri
+                html_content = markdown2.markdown(
+                    response.text,
+                    extras=['fenced-code-blocks', 'tables', 'break-on-newline']
+                )
+                
+                cleaned_html = bleach.clean(
+                    html_content,
                     tags=['p', 'strong', 'em', 'code', 'pre', 'br', 'a'],
                     attributes={'a': ['href']},
                     strip=True
@@ -224,6 +249,7 @@ def index():
                          sohbet_gecmisi=sohbet_gecmisi, 
                          chat_histories=sorted_histories,
                          current_chat_id=current_chat_id)
+
 
 
 @app.route('/new_chat', methods=['POST'])
