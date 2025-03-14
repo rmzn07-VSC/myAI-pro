@@ -1,5 +1,5 @@
 ÖzGür.AI-LocalProject de uygun venv eğer yoksa "python -m venv venv" ile venv oluşturuyorsun, 
- "venv\Scripts\activate" yi çalıştırıp projeyi aktif ediyorsun,
+ ".venv\Scripts\activate" yi çalıştırıp projeyi aktif ediyorsun,
 
 -------------------------------------------------------------------------------------------------------------
 

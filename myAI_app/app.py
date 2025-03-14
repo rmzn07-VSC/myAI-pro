@@ -1,12 +1,14 @@
 import os
-from flask import Flask, render_template, request, jsonify # type: ignore
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context # type: ignore
 from markupsafe import Markup  # type: ignore # Değişiklik burada
 import google.generativeai as genai # type: ignore
 from dotenv import load_dotenv # type: ignore
 import markdown2 # type: ignore
 import bleach  # type: ignore # HTML temizleme için ekleyin (pip install bleach)
 import time
+import json
 from quest import Quest
+from utils.title_manager import TitleManager
 
 load_dotenv()
 
@@ -333,13 +335,67 @@ def load_chat(chat_id):
             "message": str(e)
         }), 500
 
+@app.route('/stream', methods=['POST'])
+def stream():
+    if not request.is_json:
+        return jsonify({"error": "JSON required"}), 400
+        
+    data = request.get_json()
+    message = data.get('message', '').strip()
+    
+    if not message:
+        return jsonify({"error": "Message required"}), 400
+
+    def generate():
+        try:
+            # AI yanıtını al
+            response = send_ai_message(message, chat)
+            text = response.text
+            
+            # Markdown dönüşümü
+            html_content = markdown2.markdown(
+                text,
+                extras=['fenced-code-blocks', 'tables', 'break-on-newline']
+            )
+            
+            # HTML temizleme
+            cleaned_html = bleach.clean(
+                html_content,
+                tags=['p', 'strong', 'em', 'code', 'pre', 'br', 'a'],
+                attributes={'a': ['href']},
+                strip=True
+            )
+            
+            # Her karakteri tek tek gönder
+            for char in cleaned_html:
+                data = {
+                    'char': char,
+                    'type': 'char'
+                }
+                yield f"data: {json.dumps(data)}\n\n"
+                time.sleep(0.02)  # 20ms gecikme
+            
+            # Yanıt bitti işareti
+            yield f"data: {json.dumps({'type': 'end'})}\n\n"
+            
+        except Exception as e:
+            error_data = {
+                'error': str(e),
+                'type': 'error'
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        }
+    )
+
 def get_chat_title(messages):
-    """İlk kullanıcı mesajını başlık olarak kullan"""
-    for message in messages:
-        if message["rol"] == "user":
-            title = message["icerik"][:12]  # İlk 12 karakter
-            return title + "..."  # Her zaman 3 nokta ekle
-    return "Yeni Sohbet"
+    return TitleManager.get_chat_title(messages)
 
 if __name__ == '__main__':
     app.run(debug=True)

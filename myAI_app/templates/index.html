@@ -121,21 +121,38 @@
         // Enter tuşu için olan kodu güncelle
         document.getElementById('mesaj').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                const form = document.getElementById('chat-form');
-                const textarea = document.getElementById('mesaj');
-                
-                // Submit butonunu gönder (send) olarak ayarla
-                const submitBtn = form.querySelector('button[value="send"]');
-                submitBtn.click(); // Gönder butonuna tıkla
-                
-                // Textarea'yı temizle ve focus'u koru
-                setTimeout(() => {
-                    textarea.value = '';
-                    textarea.focus();
-                }, 10);
+            e.preventDefault();
+            const form = document.getElementById('chat-form');
+            const textarea = document.getElementById('mesaj');
+            
+            // Submit butonunu gönder (send) olarak ayarla
+            const submitBtn = form.querySelector('button[value="send"]');
+            submitBtn.click(); // Gönder butonuna tıkla
+            
+            // Textarea'yı temizle ve focus'u koru
+            setTimeout(() => {
+                textarea.value = '';
+                textarea.focus();
+            }, 10);
+
+            // 2 saniye boyunca aşağıya kaydır
+            let scrollInterval = setInterval(scrollToBottom, 100);
+            setTimeout(() => {
+                clearInterval(scrollInterval);
+            }, 2000);
             }
         });
+
+        // Gönder butonu için click handler
+        document.querySelector('button[value="send"]').addEventListener('click', function() {
+            // 2 saniye boyunca aşağıya kaydır 
+            let scrollInterval = setInterval(scrollToBottom, 100);
+            setTimeout(() => {
+            clearInterval(scrollInterval);
+            }, 2000);
+        });
+
+        scrollToBottom();
 
         // Otomatik kaydırma fonksiyonu
         function scrollToBottom() {
@@ -902,6 +919,13 @@
                 menuBtn.querySelector('i').className = 'bi bi-clock-history';
                 menuBtn.title = 'Sohbet Geçmişi';
             }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/stream-handler.js') }}"></script>
+    <script>
+        // Initialize stream handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const streamHandler = new StreamHandler();
         });
     </script>
 </body>
