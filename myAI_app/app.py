@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify # type: ignore
 from markupsafe import Markup  # type: ignore # Değişiklik burada
 import google.generativeai as genai # type: ignore
 from dotenv import load_dotenv # type: ignore
@@ -49,12 +49,23 @@ def is_duplicate_last_message(message):
     last_messages = get_last_messages()
     return message in last_messages
 
-def load_system_prompt():
-    """Sistem promptunu dosyadan yükle"""
+def load_system_prompts():
+    """İki sistem promptunu da yükle ve birleştir"""
     try:
-        prompt_path = os.path.join('prompts', 'system_prompt.txt')
-        with open(prompt_path, 'r', encoding='utf-8') as file:
-            return file.read()
+        prompt1 = ""
+        prompt2 = ""
+        
+        # İlk prompt'u yükle
+        prompt_path1 = os.path.join('prompts', 'system_prompt.txt')
+        with open(prompt_path1, 'r', encoding='utf-8') as file:
+            prompt1 = file.read()
+            
+        # İkinci prompt'u yükle
+        prompt_path2 = os.path.join('prompts', 'system_prompt2.txt')
+        with open(prompt_path2, 'r', encoding='utf-8') as file:
+            prompt2 = file.read()
+            
+        return prompt1 + "\n\n" + prompt2
     except FileNotFoundError:
         return "Sen ÖzGür.AI isimli bir yapay zeka asistanısın."
 
@@ -69,8 +80,8 @@ def index():
             current_chat_id = next(iter(chat_histories))
             sohbet_gecmisi = chat_histories[current_chat_id]["messages"].copy()
             chat = model.start_chat(history=[])
-            # Sistem promptunu gönder
-            chat.send_message(load_system_prompt())
+            # İki promptu birden gönder
+            chat.send_message(load_system_prompts())
         else:
             # İlk defa açılıyorsa yeni sohbet başlat
             current_chat_id = str(time.time())
@@ -92,7 +103,7 @@ def index():
             sohbet_gecmisi = []
             chat = model.start_chat(history=[])
             # Sistem promptunu gönder
-            chat.send_message(load_system_prompt())
+            chat.send_message(load_system_prompts())
             welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
             sohbet_gecmisi.append({
                 "rol": "ai",
@@ -200,7 +211,7 @@ def new_chat():
         sohbet_gecmisi = []
         chat = model.start_chat(history=[])
         # Sistem promptunu gönder
-        chat.send_message(load_system_prompt())
+        chat.send_message(load_system_prompts())
         
         # Hoşgeldin mesajı
         welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
@@ -258,7 +269,7 @@ def load_chat(chat_id):
             sohbet_gecmisi = chat_histories[chat_id]["messages"].copy()
             chat = model.start_chat(history=[])  # Yeni chat instance
             # Sistem promptunu gönder
-            chat.send_message(load_system_prompt())
+            chat.send_message(load_system_prompts())
             current_chat_id = chat_id
             
             app.logger.info(f"Sohbet başarıyla yüklendi: {chat_id}")
