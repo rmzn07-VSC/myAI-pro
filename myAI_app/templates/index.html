@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>myAI ile Sohbet Et! - ÖZGÜR</title>
+    <title>ÖzGür.AI ile Sohbet Et! - ÖZGÜR</title>
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -62,7 +62,7 @@
             <div class="chat-history">
                 {% for chat_id, chat in chat_histories.items() %}
                     <div class="history-item {% if chat_id == current_chat_id %}active{% endif %}" 
-                         data-chat-id="{{ chat_id }}">
+                        data-chat-id="{{ chat_id }}">
                         <i class="bi bi-chat-left-text"></i>
                         <span>{{ chat.title }}</span>
                     </div>
@@ -72,14 +72,14 @@
 
         <!-- Sağ taraf - Ana sohbet alanı -->
         <div class="main-content">
-            <h1 class="text-center mb-4 display-4 fw-bold text-light" style="margin-top:-15px; padding-bottom: 30px; font-size: 30px;">myAI ile Sohbet Et!</h1>
+            <h1 class="text-center mb-4 display-4 fw-bold text-light" style="margin-top:-10px; padding-bottom: 30px; font-size: 25px;"><b>ÖzGür.AI</b> ile Sohbet Et!</h1>
 
             <div id="chat-container" class="bg-dark rounded">
                 {% for mesaj in sohbet_gecmisi %}
                     <div class="message {{ mesaj.rol }}-message" {% if mesaj.get('yeni_yanit') %}data-new-response="true"{% endif %}>
                         <div class="message-content">
                             {% if mesaj.rol == 'ai' %}
-                                <h2>myAI Cevabı:</h2>
+                                <h2>ÖzGür.AI Cevabı:</h2>
                             {% else %}
                                 <h2>Sen:</h2>
                             {% endif %}
@@ -92,7 +92,13 @@
             <!-- Input form artık main-content içinde -->
             <form method="POST" class="input-form" id="chat-form">
                 <div class="input-group">
-                    <textarea class="form-control" id="mesaj" name="mesaj" placeholder="Mesajınızı yazın..." autofocus></textarea>
+                    <textarea class="form-control" 
+                             id="mesaj" 
+                             name="mesaj" 
+                             placeholder=""
+                             onfocus="this.placeholder = 'Mesajını Yazınız...'; this.style.fontSize = '16px';"
+                             onblur="this.placeholder = 'Yazdığınız mesaj uzun bir yanıt gerektiriyor ise beklemeniz gerekebilir...(Maximum 15 saniye)'; this.style.fontSize = '10px';"
+                             autofocus></textarea>
                     <button type="submit" name="action" value="send" class="btn btn-success" title="Gönder">
                         <i class="bi bi-send-fill"></i>
                     </button>
@@ -104,27 +110,49 @@
         </div>
     </div>
 
+    <!-- Mobil menü butonu -->
+    <button class="mobile-menu-button" id="mobileMenuBtn" title="Sohbet Geçmişi">
+        <i class="bi bi-clock-history"></i>
+    </button>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Enter tuşu için olan kodu güncelle
         document.getElementById('mesaj').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                const form = document.getElementById('chat-form');
-                const textarea = document.getElementById('mesaj');
-                
-                // Submit butonunu gönder (send) olarak ayarla
-                const submitBtn = form.querySelector('button[value="send"]');
-                submitBtn.click(); // Gönder butonuna tıkla
-                
-                // Textarea'yı temizle ve focus'u koru
-                setTimeout(() => {
-                    textarea.value = '';
-                    textarea.focus();
-                }, 10);
+            e.preventDefault();
+            const form = document.getElementById('chat-form');
+            const textarea = document.getElementById('mesaj');
+            
+            // Submit butonunu gönder (send) olarak ayarla
+            const submitBtn = form.querySelector('button[value="send"]');
+            submitBtn.click(); // Gönder butonuna tıkla
+            
+            // Textarea'yı temizle ve focus'u koru
+            setTimeout(() => {
+                textarea.value = '';
+                textarea.focus();
+            }, 10);
+
+            // 2 saniye boyunca aşağıya kaydır
+            let scrollInterval = setInterval(scrollToBottom, 100);
+            setTimeout(() => {
+                clearInterval(scrollInterval);
+            }, 2000);
             }
         });
+
+        // Gönder butonu için click handler
+        document.querySelector('button[value="send"]').addEventListener('click', function() {
+            // 2 saniye boyunca aşağıya kaydır 
+            let scrollInterval = setInterval(scrollToBottom, 100);
+            setTimeout(() => {
+            clearInterval(scrollInterval);
+            }, 2000);
+        });
+
+        scrollToBottom();
 
         // Otomatik kaydırma fonksiyonu
         function scrollToBottom() {
@@ -378,7 +406,7 @@
                     chatContainer.innerHTML = `
                         <div class="message ai-message">
                             <div class="message-content">
-                                <h2>myAI Cevabı:</h2>
+                                <h2>ÖzGür.AI Cevabı:</h2>
                                 <p>${data.messages[0].icerik}</p>
                             </div>
                         </div>
@@ -430,7 +458,7 @@
                         messageElement.className = `message ${message.rol}-message`;
                         messageElement.innerHTML = `
                             <div class="message-content">
-                                <h2>${message.rol === 'ai' ? 'myAI Cevabı:' : 'Sen:'}</h2>
+                                <h2>${message.rol === 'ai' ? 'ÖzGür.AI Cevabı:' : 'Sen:'}</h2>
                                 <p>${message.icerik}</p>
                             </div>
                         `;
@@ -515,7 +543,7 @@
                     chatContainer.innerHTML = `
                         <div class="message ai-message">
                             <div class="message-content">
-                                <h2>myAI Cevabı:</h2>
+                                <h2>ÖzGür.AI Cevabı:</h2>
                                 <p>${data.messages[0].icerik}</p>
                             </div>
                         </div>
@@ -642,7 +670,7 @@
                             chatContainer.innerHTML = `
                                 <div class="message ai-message">
                                     <div class="message-content">
-                                        <h2>myAI Cevabı:</h2>
+                                        <h2>ÖzGür.AI Cevabı:</h2>
                                         <p>${data.messages[0].icerik}</p>
                                     </div>
                                 </div>
@@ -703,7 +731,7 @@
                                     messageElement.className = `message ${message.rol}-message`;
                                     messageElement.innerHTML = `
                                         <div class="message-content">
-                                            <h2>${message.rol === 'ai' ? 'myAI Cevabı:' : 'Sen:'}</h2>
+                                            <h2>${message.rol === 'ai' ? 'ÖzGür.AI Cevabı:' : 'Sen:'}</h2>
                                             <p>${message.icerik}</p>
                                         </div>
                                     `;
@@ -861,6 +889,43 @@
                     return false;
                 }
             }
+        });
+    </script>
+
+    <script>
+        // Mobil menü kontrolü
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('active');
+            
+            // İkon değişimi
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('active')) {
+                icon.className = 'bi bi-x-lg';
+                this.title = 'Kapat';
+            } else {
+                icon.className = 'bi bi-clock-history';
+                this.title = 'Sohbet Geçmişi';
+            }
+        });
+
+        // Sohbet alanına tıklandığında menüyü kapat
+        document.getElementById('chat-container').addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                menuBtn.querySelector('i').className = 'bi bi-clock-history';
+                menuBtn.title = 'Sohbet Geçmişi';
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/stream-handler.js') }}"></script>
+    <script>
+        // Initialize stream handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const streamHandler = new StreamHandler();
         });
     </script>
 </body>

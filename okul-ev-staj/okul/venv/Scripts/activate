@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="E:\2024-2025\myBigProject\myAI-LocalProject\venv"
+VIRTUAL_ENV="E:\2024-2025\myBigProject\ÖzGür.AI-LocalProject\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

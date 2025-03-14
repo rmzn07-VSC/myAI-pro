@@ -1,9 +1,9 @@
-myAI-LocalProject de uygun venv eğer yoksa "python -m venv venv" ile venv oluşturuyorsun, 
- "venv\Scripts\activate" yi çalıştırıp projeyi aktif ediyorsun,
+ÖzGür.AI-LocalProject de uygun venv eğer yoksa "python -m venv venv" ile venv oluşturuyorsun, 
+ ".venv\Scripts\activate" yi çalıştırıp projeyi aktif ediyorsun,
 
 -------------------------------------------------------------------------------------------------------------
 
-cd myAI_app a gidiuyosun ve sonra "python app.py" yazıp server i başlatıyorsun
+cd ÖzGür.AI_app a gidiuyosun ve sonra "python app.py" yazıp server i başlatıyorsun
 
 -------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ Projeni github a aktarmak için sırası ile:
 2.   git init
 3.   git add .
 4.   git commit -m "commitAdi"
-5.   git remote add origin https://github.com/rmzn07-VSC/myAI-pro.git
+5.   git remote add origin https://github.com/rmzn07-VSC/ÖzGür.AI-pro.git
 6.   git push -u origin main
 
 Projeni güncellemek için ise:

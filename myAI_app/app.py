@@ -1,12 +1,14 @@
 import os
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context # type: ignore
 from markupsafe import Markup  # type: ignore # Değişiklik burada
 import google.generativeai as genai # type: ignore
 from dotenv import load_dotenv # type: ignore
 import markdown2 # type: ignore
 import bleach  # type: ignore # HTML temizleme için ekleyin (pip install bleach)
 import time
+import json
 from quest import Quest
+from utils.title_manager import TitleManager
 
 load_dotenv()
 
@@ -49,6 +51,45 @@ def is_duplicate_last_message(message):
     last_messages = get_last_messages()
     return message in last_messages
 
+def load_system_prompts():
+    """İki sistem promptunu da yükle ve birleştir"""
+    try:
+        prompt1 = ""
+        prompt2 = ""
+        
+        # İlk prompt'u yükle
+        prompt_path1 = os.path.join('prompts', 'system_prompt.txt')
+        with open(prompt_path1, 'r', encoding='utf-8') as file:
+            prompt1 = file.read()
+            
+        # İkinci prompt'u yükle
+        prompt_path2 = os.path.join('prompts', 'system_prompt2.txt')
+        with open(prompt_path2, 'r', encoding='utf-8') as file:
+            prompt2 = file.read()
+            
+        return prompt1 + "\n\n" + prompt2
+    except FileNotFoundError:
+        return "Sen ÖzGür.AI isimli bir yapay zeka asistanısın."
+
+def create_new_chat_instance():
+    """Yeni bir chat instance oluştur ve system promptları yükle"""
+    chat = model.start_chat(history=[])
+    # System promptları gönder ve yanıtı bekle
+    system_prompt = load_system_prompts()
+    chat.send_message(system_prompt)
+    return chat
+
+def send_ai_message(message, current_chat=None):
+    """AI'ya mesaj gönder, eğer chat yoksa veya hata alırsan yeni chat başlat"""
+    try:
+        if current_chat is None:
+            current_chat = create_new_chat_instance()
+        return current_chat.send_message(message)
+    except Exception as e:
+        app.logger.error(f"Chat hatası, yeni instance oluşturuluyor: {str(e)}")
+        current_chat = create_new_chat_instance()
+        return current_chat.send_message(message)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global sohbet_gecmisi, chat, current_chat_id
@@ -59,11 +100,11 @@ def index():
             # En son sohbeti yükle
             current_chat_id = next(iter(chat_histories))
             sohbet_gecmisi = chat_histories[current_chat_id]["messages"].copy()
-            chat = model.start_chat(history=[])
+            chat = create_new_chat_instance()  # Değişiklik burada
         else:
             # İlk defa açılıyorsa yeni sohbet başlat
             current_chat_id = str(time.time())
-            welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
+            welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
             sohbet_gecmisi = [{
                 "rol": "ai",
                 "icerik": welcome_message
@@ -80,7 +121,9 @@ def index():
             old_chat_id = current_chat_id
             sohbet_gecmisi = []
             chat = model.start_chat(history=[])
-            welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
+            # Sistem promptunu gönder
+            chat.send_message(load_system_prompts())
+            welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
             sohbet_gecmisi.append({
                 "rol": "ai",
                 "icerik": welcome_message
@@ -101,6 +144,33 @@ def index():
         elif request.form.get('action') == 'send' and request.form.get('mesaj', '').strip():
             mesaj = request.form['mesaj'].strip()
             
+            # İlk mesaj kontrolü
+            quest = Quest(mesaj, time.time())
+            if quest.check_for_first_message_request(mesaj):
+                response_text = quest.get_response_for_first_message(sohbet_gecmisi)
+                sohbet_gecmisi.append({
+                    "rol": "user",
+                    "icerik": mesaj,
+                    "quest_id": quest.quest_id
+                })
+                sohbet_gecmisi.append({
+                    "rol": "ai",
+                    "icerik": response_text,
+                    "yeni_yanit": True
+                })
+                
+                if current_chat_id:
+                    chat_histories[current_chat_id] = {
+                        "messages": sohbet_gecmisi.copy(),
+                        "title": get_chat_title(sohbet_gecmisi),
+                        "timestamp": time.time()
+                    }
+                
+                return render_template('index.html',
+                                    sohbet_gecmisi=sohbet_gecmisi,
+                                    chat_histories=chat_histories,
+                                    current_chat_id=current_chat_id)
+            
             # Sadece son mesajlarda duplicate kontrolü
             if is_duplicate_last_message(mesaj):
                 return render_template('index.html', 
@@ -113,8 +183,8 @@ def index():
                 quest = Quest(mesaj, time.time())
                 sohbet_gecmisi.append({"rol": "user", "icerik": mesaj, "quest_id": quest.quest_id})
                 
-                # AI yanıtı
-                response = chat.send_message(mesaj)
+                # AI yanıtı - Değişiklik burada
+                response = send_ai_message(mesaj, chat)
                 
                 # Markdown ve HTML işlemleri
                 html_content = markdown2.markdown(
@@ -185,10 +255,10 @@ def new_chat():
         
         # Yeni sohbet başlat
         sohbet_gecmisi = []
-        chat = model.start_chat(history=[])
+        chat = create_new_chat_instance()  # Değişiklik burada
         
         # Hoşgeldin mesajı
-        welcome_message = "Selam ben myAI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
+        welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
         sohbet_gecmisi = [{
             "rol": "ai",
             "icerik": welcome_message
@@ -241,7 +311,7 @@ def load_chat(chat_id):
             
             # Yeni sohbeti yükle
             sohbet_gecmisi = chat_histories[chat_id]["messages"].copy()
-            chat = model.start_chat(history=[])  # Yeni chat instance
+            chat = create_new_chat_instance()  # Değişiklik burada
             current_chat_id = chat_id
             
             app.logger.info(f"Sohbet başarıyla yüklendi: {chat_id}")
@@ -265,13 +335,67 @@ def load_chat(chat_id):
             "message": str(e)
         }), 500
 
+@app.route('/stream', methods=['POST'])
+def stream():
+    if not request.is_json:
+        return jsonify({"error": "JSON required"}), 400
+        
+    data = request.get_json()
+    message = data.get('message', '').strip()
+    
+    if not message:
+        return jsonify({"error": "Message required"}), 400
+
+    def generate():
+        try:
+            # AI yanıtını al
+            response = send_ai_message(message, chat)
+            text = response.text
+            
+            # Markdown dönüşümü
+            html_content = markdown2.markdown(
+                text,
+                extras=['fenced-code-blocks', 'tables', 'break-on-newline']
+            )
+            
+            # HTML temizleme
+            cleaned_html = bleach.clean(
+                html_content,
+                tags=['p', 'strong', 'em', 'code', 'pre', 'br', 'a'],
+                attributes={'a': ['href']},
+                strip=True
+            )
+            
+            # Her karakteri tek tek gönder
+            for char in cleaned_html:
+                data = {
+                    'char': char,
+                    'type': 'char'
+                }
+                yield f"data: {json.dumps(data)}\n\n"
+                time.sleep(0.02)  # 20ms gecikme
+            
+            # Yanıt bitti işareti
+            yield f"data: {json.dumps({'type': 'end'})}\n\n"
+            
+        except Exception as e:
+            error_data = {
+                'error': str(e),
+                'type': 'error'
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        }
+    )
+
 def get_chat_title(messages):
-    """İlk kullanıcı mesajını başlık olarak kullan"""
-    for message in messages:
-        if message["rol"] == "user":
-            title = message["icerik"][:12]  # İlk 12 karakter
-            return title + "..."  # Her zaman 3 nokta ekle
-    return "Yeni Sohbet"
+    return TitleManager.get_chat_title(messages)
 
 if __name__ == '__main__':
     app.run(debug=True)
