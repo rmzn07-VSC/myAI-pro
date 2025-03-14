@@ -69,6 +69,25 @@ def load_system_prompts():
     except FileNotFoundError:
         return "Sen ÖzGür.AI isimli bir yapay zeka asistanısın."
 
+def create_new_chat_instance():
+    """Yeni bir chat instance oluştur ve system promptları yükle"""
+    chat = model.start_chat(history=[])
+    # System promptları gönder ve yanıtı bekle
+    system_prompt = load_system_prompts()
+    chat.send_message(system_prompt)
+    return chat
+
+def send_ai_message(message, current_chat=None):
+    """AI'ya mesaj gönder, eğer chat yoksa veya hata alırsan yeni chat başlat"""
+    try:
+        if current_chat is None:
+            current_chat = create_new_chat_instance()
+        return current_chat.send_message(message)
+    except Exception as e:
+        app.logger.error(f"Chat hatası, yeni instance oluşturuluyor: {str(e)}")
+        current_chat = create_new_chat_instance()
+        return current_chat.send_message(message)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global sohbet_gecmisi, chat, current_chat_id
@@ -79,9 +98,7 @@ def index():
             # En son sohbeti yükle
             current_chat_id = next(iter(chat_histories))
             sohbet_gecmisi = chat_histories[current_chat_id]["messages"].copy()
-            chat = model.start_chat(history=[])
-            # İki promptu birden gönder
-            chat.send_message(load_system_prompts())
+            chat = create_new_chat_instance()  # Değişiklik burada
         else:
             # İlk defa açılıyorsa yeni sohbet başlat
             current_chat_id = str(time.time())
@@ -125,6 +142,33 @@ def index():
         elif request.form.get('action') == 'send' and request.form.get('mesaj', '').strip():
             mesaj = request.form['mesaj'].strip()
             
+            # İlk mesaj kontrolü
+            quest = Quest(mesaj, time.time())
+            if quest.check_for_first_message_request(mesaj):
+                response_text = quest.get_response_for_first_message(sohbet_gecmisi)
+                sohbet_gecmisi.append({
+                    "rol": "user",
+                    "icerik": mesaj,
+                    "quest_id": quest.quest_id
+                })
+                sohbet_gecmisi.append({
+                    "rol": "ai",
+                    "icerik": response_text,
+                    "yeni_yanit": True
+                })
+                
+                if current_chat_id:
+                    chat_histories[current_chat_id] = {
+                        "messages": sohbet_gecmisi.copy(),
+                        "title": get_chat_title(sohbet_gecmisi),
+                        "timestamp": time.time()
+                    }
+                
+                return render_template('index.html',
+                                    sohbet_gecmisi=sohbet_gecmisi,
+                                    chat_histories=chat_histories,
+                                    current_chat_id=current_chat_id)
+            
             # Sadece son mesajlarda duplicate kontrolü
             if is_duplicate_last_message(mesaj):
                 return render_template('index.html', 
@@ -137,8 +181,8 @@ def index():
                 quest = Quest(mesaj, time.time())
                 sohbet_gecmisi.append({"rol": "user", "icerik": mesaj, "quest_id": quest.quest_id})
                 
-                # AI yanıtı
-                response = chat.send_message(mesaj)
+                # AI yanıtı - Değişiklik burada
+                response = send_ai_message(mesaj, chat)
                 
                 # Markdown ve HTML işlemleri
                 html_content = markdown2.markdown(
@@ -209,9 +253,7 @@ def new_chat():
         
         # Yeni sohbet başlat
         sohbet_gecmisi = []
-        chat = model.start_chat(history=[])
-        # Sistem promptunu gönder
-        chat.send_message(load_system_prompts())
+        chat = create_new_chat_instance()  # Değişiklik burada
         
         # Hoşgeldin mesajı
         welcome_message = "Selam ben ÖzGür.AI 'ım!!! Nasılsın? Sana nasıl yardımcı olabilirim? 😊"
@@ -267,9 +309,7 @@ def load_chat(chat_id):
             
             # Yeni sohbeti yükle
             sohbet_gecmisi = chat_histories[chat_id]["messages"].copy()
-            chat = model.start_chat(history=[])  # Yeni chat instance
-            # Sistem promptunu gönder
-            chat.send_message(load_system_prompts())
+            chat = create_new_chat_instance()  # Değişiklik burada
             current_chat_id = chat_id
             
             app.logger.info(f"Sohbet başarıyla yüklendi: {chat_id}")
